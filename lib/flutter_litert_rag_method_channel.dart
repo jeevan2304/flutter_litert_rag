@@ -9,11 +9,4 @@ class MethodChannelFlutterLitertRag extends FlutterLitertRagPlatform {
   @visibleForTesting
   final methodChannel = const MethodChannel('flutter_litert_rag');
 
-  @override
-  Future<String?> getPlatformVersion() async {
-    final version = await methodChannel.invokeMethod<String>(
-      'getPlatformVersion',
-    );
-    return version;
-  }
 }

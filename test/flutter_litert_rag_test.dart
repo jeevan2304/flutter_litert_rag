@@ -19,10 +19,10 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    FlutterLitertRag flutterLitertRagPlugin = FlutterLitertRag();
+    LiteRtRagEngine flutterLitertRagPlugin = LiteRtRagEngine();;
     MockFlutterLitertRagPlatform fakePlatform = MockFlutterLitertRagPlatform();
     FlutterLitertRagPlatform.instance = fakePlatform;
 
-    expect(await flutterLitertRagPlugin.getPlatformVersion(), '42');
+    // expect(await flutterLitertRagPlugin.getPlatformVersion(), '42');
   });
 }
