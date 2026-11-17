@@ -9,13 +9,9 @@ class TFLiteEmbeddingEngine {
   // all-MiniLM-L6-v2 strict sequence length
   static const int _maxSequenceLength = 256;
 
-  Future<void> initialize(String modelPath) async {
-    try {
-      _interpreter = await Interpreter.fromFile(File(modelPath));
-      print("Embedding model loaded successfully.");
-    } catch (e) {
-      throw Exception("Failed to load embedding model: $e");
-    }
+  Future<void> initialize(String modelPath, String vocabPath) async {
+    _interpreter = await Interpreter.fromFile(File(modelPath));
+    await _tokenizer.loadVocab(vocabPath);
   }
 
   List<double> generateEmbedding(String text) {

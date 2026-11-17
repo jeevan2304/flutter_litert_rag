@@ -20,11 +20,11 @@ class LiteRtRagEngine {
   Future<void> initialize({
     required String llmModelPath,
     required String embeddingModelPath,
+    required String vocabPath, // Added
   }) async {
     await _vectorDb.initialize();
-    await _embeddingEngine.initialize(embeddingModelPath);
+    await _embeddingEngine.initialize(embeddingModelPath, vocabPath); // Passed down
 
-    // Trigger the Kotlin engine initialization
     await _methodChannel.invokeMethod('initializeLlm', {
       'modelPath': llmModelPath,
     });
@@ -53,30 +53,27 @@ class LiteRtRagEngine {
     String context = relevantChunks.map((c) => c.text).join('\n\n');
     String finalPrompt = "Context:\n$context\n\nQuestion: $prompt\nAnswer:";
 
-    // Create a StreamController to manage the incoming tokens from Kotlin
+    // Create a NEW controller for every request to avoid the "closed stream" error
     final controller = StreamController<String>();
 
-    // Listen to the EventChannel for streamed tokens
     final subscription = _eventChannel.receiveBroadcastStream().listen((event) {
       final token = event as String;
       if (token == "[DONE]") {
-        controller.close(); // End the stream when Kotlin signals completion
+        controller.close();
       } else {
-        controller.add(token); // Add the newly generated word to the Flutter UI
+        if (!controller.isClosed) controller.add(token);
       }
     }, onError: (error) {
-      controller.addError(error);
+      if (!controller.isClosed) controller.addError(error);
     });
 
-    // Trigger the native generation process
     _methodChannel.invokeMethod('generateResponse', {
       'prompt': finalPrompt,
     }).catchError((e) {
-      controller.addError(e);
+      if (!controller.isClosed) controller.addError(e);
       controller.close();
     });
 
-    // Yield the tokens to the package consumer as they arrive
     yield* controller.stream;
   }
 
